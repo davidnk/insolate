@@ -1,6 +1,6 @@
 #! /usr/bin/python
 import os, sys
-from subprocess import Popen, call, PIPE
+from subprocess import check_output, call, PIPE
 
 def call_init(remote_changes=None):
     if os.path.exists(".git"):
@@ -16,7 +16,7 @@ def call_init(remote_changes=None):
     call(sh, shell=True, stdout=PIPE, stdin=PIPE, stderr=PIPE)
     if remote_changes:
         sh = """
-            scp -r %s .
+            rsync -Pravdtze ssh %s .
             git add .
             git commit -a -m "Initial changes"
             """ % remote_changes
@@ -39,9 +39,11 @@ def call_done(remote_changes=None):
     if not os.path.exists(".git"):
         exit("missing .git; to initial run: multi init <remote changes>")
     call_to("CHANGES")
-# TODO: this scp is wrong since it also copies the .git dir
     if remote_changes:
-        call("scp -r ../ %s" % remote_changes, shell=True, stdout=PIPE, stdin=PIPE, stderr=PIPE)
+        changes = check_output("git diff --name-only ORIG CHANGES", shell=True)
+        changes = changes.strip().split('\n')
+        for f in changes:
+            call("rsync -Pravdtze ssh  %s" % remote_changes, shell=True, stdout=PIPE, stdin=PIPE, stderr=PIPE)
     call_to("ORIG")
     call("rm -rf .git", shell=True, stdout=PIPE, stdin=PIPE, stderr=PIPE)
     print "DONE"
@@ -66,7 +68,7 @@ def main(argv):
         else:
             exit("multi done [remote_changes]")
     else:
-        exit("for help run: multi -h")
+        exit("Not a multi command. See 'multi --help'.")
 
 if __name__ == "__main__":
     main(sys.argv[1:])
