@@ -1,0 +1,7 @@
+include README.rst
+include AUTHORS.txt
+include LICENSE.txt
+include CHANGES.txt
+include PROJECT.txt
+recursive-include insulater *
+
