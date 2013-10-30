@@ -72,6 +72,11 @@ def main(argv):
             exit("multi init [remote_changes]")
     elif argv[0] == 'to':
         if len(argv) < 2:
+            head = check_output('cat .multi/HEAD', shell=True)
+            if 'ref: refs/heads/' in head:
+                print head.strip('ref: refs/heads/').strip('\n')
+            else:
+                print 'ORIG'
             exit("multi to <ORIG or CHANGES>")
         print call_to(argv[1])
     elif argv[0] == 'done':
