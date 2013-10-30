@@ -19,14 +19,19 @@ def call_init(remote_changes=None):
         """
     call(sh, shell=True, stdout=PIPE, stdin=PIPE, stderr=PIPE)
     if remote_changes:
-        sh = """
-            rsync -Pravdtze ssh %s .
-            git --git-dir=.multi add .
-            git --git-dir=.multi reset -- .multi
-            git --git-dir=.multi commit -a -m "Initial changes"
-            """ % remote_changes
-        call(sh, shell=True, stdout=PIPE, stdin=PIPE, stderr=PIPE)
+        call_pull(remote_changes)
     return "Initialized branches ORIG, CHANGES"
+
+def call_pull(remote_changes):
+    call_to('CHANGES')
+    sh = """
+        rsync -Pravdtze ssh %s .
+        git --git-dir=.multi add .
+        git --git-dir=.multi reset -- .multi
+        git --git-dir=.multi commit -a -m "Pulled changes"
+        """ % remote_changes
+    call(sh, shell=True, stdout=PIPE, stdin=PIPE, stderr=PIPE)
+    return "Pulled updates"
 
 def call_to(branch):
     if not os.path.exists(".multi"):
@@ -64,12 +69,18 @@ def main(argv):
     if len(argv) == 0 or argv[0] == '-h' or argv[0] == '--help':
         exit("multi init <remote_changes>\t\tstarts\n" + \
              "multi to <ORIG or CHANGES>\t\tnavigates to branch\n" + \
+             "multi pull <remote_changes>\t\tpulls remote changes branch\n" + \
              "multi done [remote_changes]\t\tcopies changes back to remote and ends")
     if argv[0] == 'init':
         if len(argv) <= 2:
             print call_init(*argv[1:])
         else:
             exit("multi init [remote_changes]")
+    elif argv[0] == 'pull':
+        if len(argv) == 2:
+            print call_pull(argv[1])
+        else:
+            exit("multi pull <remote_changes>")
     elif argv[0] == 'to':
         if len(argv) < 2:
             head = check_output('cat .multi/HEAD', shell=True)
