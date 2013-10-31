@@ -1,0 +1,6 @@
+#! /usr/bin/python
+from insolater import command
+
+
+if __name__ == '__main__':
+    command()
