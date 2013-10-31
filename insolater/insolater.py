@@ -33,9 +33,10 @@ class Insolater(object):
     _NOT_INIT_MESSAGE = "No session found. See '{cmd} init <remote changes>'".format(cmd=_CMD)
     _ALREADY_INIT_MESSAGE = "Already initialized. To end session use: mulit exit [<remote backup>]"
 
-    def __init__(self, repo=".insolater_repo", timeout=5):
+    def __init__(self, repo=".insolater_repo", timeout=5, filepattern="."):
         self.repo = repo
         self.timeout = timeout
+        self.add_str = 'add ' + filepattern
 
     def main(self, argv):
         help_str = ("{cmd} init [<remote_changes>]\t\tstarts a new session.\n" +
@@ -90,7 +91,7 @@ class Insolater(object):
         self._run("echo '{fname}*' >> .gitignore".format(fname=__file__.split('/')[-1]))
         self._run("echo '.gitignore' >> .gitignore")
         self._run_git("--work-tree=. init")
-        self._run_git("add .")
+        self._run_git(self.add_str)
         self._run_git("commit -am 'Original files'")
         self._run_git("tag -a ORIG -m 'original files'")
         self._run_git("branch CHANGES")
@@ -105,7 +106,7 @@ class Insolater(object):
         """Save changes, switch to the supplied branch, restore branch to saved condition."""
         if not self._repo_exists():
             return False, Insolater._NOT_INIT_MESSAGE
-        self._run_git("add .")
+        self._run_git(self.add_str)
         self._run_git("commit -am 'update'")
         self._run_git("checkout " + branch)
         self._run_git("reset --hard")
@@ -118,7 +119,7 @@ class Insolater(object):
         if not r[0]:
             return r
         retv = self._run("rsync -Pravdtze ssh {0} .".format(remote_changes))[0]
-        self._run_git("add .")
+        self._run_git(self.add_str)
         self._run_git("commit -am 'Pulled changes'")
         self.change_branch(head)
         if (retv != 0):
