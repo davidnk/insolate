@@ -3,7 +3,5 @@ include AUTHORS.txt
 include LICENSE.txt
 include CHANGES.txt
 include PROJECT.txt
-include inso
 include setup.py
 recursive-include insolater *
-

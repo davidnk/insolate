@@ -28,4 +28,6 @@ setup(
     author_email='davidnk@gmail.com',
     url='',
     license='LICENSE.txt',
-    description='Tool to easily switch between original and modified versions of a directory.')
+    description='Tool to easily switch between original and modified versions of a directory.',
+    entry_points={'console_scripts': ['inso = insolater.run:main']},
+    )

@@ -17,7 +17,6 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
-#! /usr/bin/python
 
 from __future__ import absolute_import
 from __future__ import print_function
@@ -37,51 +36,6 @@ class Insolater(object):
         self.repo = repo
         self.timeout = timeout
         self.add_str = 'add ' + filepattern
-
-    def main(self, argv):
-        help_str = ("{cmd} init [<remote_changes>]\t\tstarts a new session.\n" +
-                    "{cmd} pwd\t\t\t\tdisplays current version.\n" +
-                    "{cmd} cd <ORIG or CHANGES>\t\tswitches to the requested version\n" +
-                    "{cmd} pull <remote_changes>\t\tpulls remote changes branch\n" +
-                    "{cmd} push <remote_location>\t\tpulls remote changes branch\n" +
-                    "{cmd} exit [<remote_changes>]\t\tends the session."
-                    ).format(cmd=Insolater._CMD)
-        if len(argv) == 0 or argv[0] == '-h' or argv[0] == '--help':
-            print(help_str)
-            return
-        if argv[0] == 'init':
-            if len(argv) <= 2:
-                print(self.start_session(*argv[1:])[1])
-            else:
-                print("Usage: {cmd} init [remote_changes]".format(cmd=Insolater._CMD))
-        elif argv[0] == 'pull':
-            if len(argv) == 2:
-                print(self.pull_remote(argv[1]))
-            else:
-                print("Usage: {cmd} pull <remote_changes>".format(cmd=Insolater._CMD))
-        elif argv[0] == 'push':
-            if len(argv) == 2:
-                print(self.push_remote(argv[1])[1])
-            else:
-                print("Usage: {cmd} push <remote_changes>".format(cmd=Insolater._CMD))
-        elif argv[0] == 'pwd':
-                head = self._get_current_branch()[1]
-                if head == 'CHANGES':
-                    print("Currently in CHANGES version.")
-                else:
-                    print('Currently in ORIG version.')
-        elif argv[0] == 'cd':
-            if len(argv) < 2:
-                print("Usage: {cmd} cd <ORIG or CHANGES>".format(cmd=Insolater._CMD))
-            else:
-                print(self.change_branch(argv[1])[1])
-        elif argv[0] == 'exit':
-            if len(argv) <= 2:
-                print(self.exit_session(*argv[1:])[1])
-            else:
-                print("Usage: {cmd} exit [<remote_changes>]".format(cmd=Insolater._CMD))
-        else:
-            print("Not a {cmd} command. See '{cmd} --help'.".format(cmd=Insolater._CMD))
 
     def start_session(self, remote_changes=None):
         """Create repo and branches, add current files, optionally add remote changes."""
@@ -114,7 +68,7 @@ class Insolater(object):
 
     def pull_remote(self, remote_changes):
         """Pull remote changes into local CHANGES branch."""
-        head = self._get_current_branch()[1]
+        head = self.get_current_branch()[1]
         r = self.change_branch('CHANGES')
         if not r[0]:
             return r
@@ -128,7 +82,7 @@ class Insolater(object):
 
     def push_remote(self, remote_location):
         """Push changes to remote location."""
-        head = self._get_current_branch()[1]
+        head = self.get_current_branch()[1]
         r = self.change_branch("CHANGES")
         if not r[0]:
             return r
@@ -171,11 +125,7 @@ class Insolater(object):
         self._run("rm -rf {repo}")
         return True, (transfers + "Session Ended")
 
-    def _repo_exists(self):
-        """Return whether or not the repo exists."""
-        return os.path.exists(self.repo)
-
-    def _get_current_branch(self):
+    def get_current_branch(self):
         """Returns the current branch.  This may be a hash value."""
         if not self._repo_exists():
             return False, Insolater._NOT_INIT_MESSAGE
@@ -183,6 +133,10 @@ class Insolater(object):
         if 'ref: refs/heads/' in cur:
             cur = cur.strip('ref: refs/heads/').strip()
         return True, cur
+
+    def _repo_exists(self):
+        """Return whether or not the repo exists."""
+        return os.path.exists(self.repo)
 
     def _save_cur(self):
         """Save progress of current branch"""
