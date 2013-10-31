@@ -1,9 +1,9 @@
 Project Info
 ============
 
-* Project Page: https://github.com/dkaresh/insulater
+* Project Page: https://github.com/dkaresh/insolater
 * Install howto: http://
 * Changelog: http://
-* Bug Tracking: https://github.com/dkaresh/insulater/issues
+* Bug Tracking: https://github.com/dkaresh/insolater/issues
 * Mailing list: http://
 * Docs: http://

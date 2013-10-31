@@ -1,9 +1,9 @@
 from distutils.core import setup
 
 setup(
-    name='insulater',
+    name='insolater',
     version='1.0.0',
-    packages=['insulater'],
+    packages=['insolater'],
     author='David Karesh',
     author_email='davidnk@gmail.com',
     url='',
