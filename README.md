@@ -8,6 +8,7 @@ Warnings
 --------
 This project is still in its early stages and some features are not ideal.
 General rule: If something goes wrong DO NOT run 'insolate.exit()' or 'inso exit'
+
 Problems you may encounter include:
   - Changes made in ORIG version are discarded when changing versions.
     - If this happens and you lose important changes DO NOT run 'insolate.exit()'
@@ -110,7 +111,7 @@ Running from command line:
   data
   ~/test $ ls ../test_changes/
   ~/test $ inso exit $USER@localhost:~/test_changes/
-  name@localhost's password:
+  name@localhost s password:
   a               transfered
   b               transfered
   d/a             transfered
@@ -129,7 +130,7 @@ Running from command line:
   ~/test $ cat d/a
   old data d/a
   ~/test $ inso init $USER@localhost:~/test_changes/
-  name@localhost's password:
+  name@localhost s password:
   Initialized versions ORIG, CHANGES
   ~/test $ ls *
   a  b  f
