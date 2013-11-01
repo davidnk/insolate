@@ -111,7 +111,7 @@ Running from command line:
   data
   ~/test $ ls ../test_changes/
   ~/test $ inso exit $USER@localhost:~/test_changes/
-  name@localhost s password:
+  name@localhost's password:
   a               transfered
   b               transfered
   d/a             transfered
@@ -130,7 +130,7 @@ Running from command line:
   ~/test $ cat d/a
   old data d/a
   ~/test $ inso init $USER@localhost:~/test_changes/
-  name@localhost s password:
+  name@localhost's password:
   Initialized versions ORIG, CHANGES
   ~/test $ ls *
   a  b  f
