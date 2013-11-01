@@ -1,7 +1,4 @@
-include README.rst
-include AUTHORS.txt
-include LICENSE.txt
-include CHANGES.txt
-include PROJECT.txt
+include *.rst
+include *.txt
 include setup.py
 recursive-include insolater *
