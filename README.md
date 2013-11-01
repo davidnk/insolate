@@ -64,85 +64,85 @@ In a python script:
 ````
 
 Running from command line:
-```bash
-  ~/test $ ls *
+```
+  <b>~/test $</b> ls *
   a  b
 
   d:
   a  c
-  ~/test $ inso init
+  <b>~/test $</b> inso init
   Initialized versions ORIG, CHANGES
-  ~/test $ inso pwd
+  <b>~/test $</b> inso pwd
   Currently in CHANGES version.
-  ~/test $ echo 'data' >> f
-  ~/test $ rm b
-  ~/test $ echo 'data' >> a
-  ~/test $ echo 'other' >> d/a
-  ~/test $ ls *
+  <b>~/test $</b> echo 'data' >> f
+  <b>~/test $</b> rm b
+  <b>~/test $</b> echo 'data' >> a
+  <b>~/test $</b> echo 'other' >> d/a
+  <b>~/test $</b> ls *
   a  f
 
   d:
   a  c
-  ~/test $ inso cd ORIG
+  <b>~/test $</b> inso cd ORIG
   Switched to ORIG
-  ~/test $ ls *
+  <b>~/test $</b> ls *
   a  b
 
   d:
   a  c
-  ~/test $ cat a
+  <b>~/test $</b> cat a
   old data a
-  ~/test $ cat d/a
+  <b>~/test $</b> cat d/a
   old data d/a
-  ~/test $ inso cd CHANGES
+  <b>~/test $</b> inso cd CHANGES
   Switched to CHANGES
-  ~/test $ ls *
+  <b>~/test $</b> ls *
   a  f
 
   d:
   a  c
-  ~/test $ cat a
+  <b>~/test $</b> cat a
   old data a
   data
-  ~/test $ cat d/a
+  <b>~/test $</b> cat d/a
   old data d/a
   other
-  ~/test $ cat f
+  <b>~/test $</b> cat f
   data
-  ~/test $ ls ../test_changes/
-  ~/test $ inso exit $USER@localhost:~/test_changes/
+  <b>~/test $</b> ls ../test_changes/
+  <b>~/test $</b> inso exit $USER@localhost:~/test_changes/
   name@localhost s password:
   a               transfered
   b               transfered
   d/a             transfered
   f               transfered
   Session Ended
-  ~/test $ ls ../test_changes/*
+  <b>~/test $</b> ls ../test_changes/*
   ../test_changes/a  ../test_changes/f
 
   ../test_changes/d:
   a
-  ~/test $ ls *
+  <b>~/test $</b> ls *
   a  b
 
   d:
   a  c
-  ~/test $ cat d/a
+  <b>~/test $</b> cat d/a
   old data d/a
-  ~/test $ inso init $USER@localhost:~/test_changes/
+  <b>~/test $</b> inso init $USER@localhost:~/test_changes/
   name@localhost s password:
   Initialized versions ORIG, CHANGES
-  ~/test $ ls *
+  <b>~/test $</b> ls *
   a  b  f
 
   d:
   a  c
-  ~/test $ cat d/a
+  <b>~/test $</b> cat d/a
   old data d/a
   other
-  ~/test $ inso exit
+  <b>~/test $</b> inso exit
   Do you want to discard changes (y/[n]): y
   Session Ended
-  ~/test $ cat d/a
+  <b>~/test $</b> cat d/a
   old data d/a
 ````
