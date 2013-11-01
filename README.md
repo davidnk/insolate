@@ -64,7 +64,7 @@ In a python script:
 ````
 
 Running from command line:
-```bash
+```
   ~/test $ ls *
   a  b
 
