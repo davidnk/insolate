@@ -1,2 +1,4 @@
 *.pyc
 build/*
+insolater.egg-info/*
+*.swp
