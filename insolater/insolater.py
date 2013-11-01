@@ -38,7 +38,7 @@ class Insolater(object):
         self.timeout = timeout
         self.filepattern = filepattern.split()
 
-    def start_session(self, remote_changes=None):
+    def init(self, remote_changes=None):
         """Create repo and branches, add current files, optionally add remote changes."""
         if self._repo_exists():
             return False, Insolater._ALREADY_INIT_MESSAGE
@@ -50,7 +50,7 @@ class Insolater(object):
         self._run_git("branch CHANGES")
         self._run_git("checkout CHANGES")
         if remote_changes:
-            r = self.pull_remote(remote_changes)
+            r = self.pull(remote_changes)
             if not r[0]:
                 return r
         return True, "Initialized versions ORIG, CHANGES"
@@ -65,7 +65,7 @@ class Insolater(object):
         self._run_git("reset --hard")
         return True, "Switched to %s" % branch
 
-    def pull_remote(self, remote_changes):
+    def pull(self, remote_changes):
         """Pull remote changes into local CHANGES branch."""
         head = self.get_current_branch()[1]
         r = self.change_branch('CHANGES')
@@ -79,7 +79,7 @@ class Insolater(object):
             return False, "Failed to sync changes"
         return True, "Pulled updates"
 
-    def push_remote(self, remote_location):
+    def push(self, remote_location):
         """Push changes to remote location."""
         head = self.get_current_branch()[1]
         r = self.change_branch("CHANGES")
@@ -105,7 +105,7 @@ class Insolater(object):
         self.change_branch(head)
         return all_sync, transfer_str
 
-    def exit_session(self, remote_location=None, discard_changes=None):
+    def exit(self, remote_location=None, discard_changes=None):
         """Restore original files, and delete changes (delete repo).
         Optionally send changed files to a remote location."""
         r = self._save_cur()
@@ -113,7 +113,7 @@ class Insolater(object):
             return r
         transfers = ""
         if remote_location:
-            all_sync, transfers = self.push_remote(remote_location)
+            all_sync, transfers = self.push(remote_location)
             if not all_sync:
                 return all_sync, (transfers + "Aborted (File transfer failed).")
         elif self._run_git("diff --name-only ORIG CHANGES")[1].strip() != '':

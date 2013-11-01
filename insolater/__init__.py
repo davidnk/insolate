@@ -34,9 +34,9 @@ from run import cli
 
 _INSOLATER = Insolater()
 
-init = _INSOLATER.start_session
-push = _INSOLATER.push_remote
-pull = _INSOLATER.pull_remote
-exit = _INSOLATER.exit_session
+init = _INSOLATER.init
+push = _INSOLATER.push
+pull = _INSOLATER.pull
+exit = _INSOLATER.exit
 cd = _INSOLATER.change_branch
 pwd = _INSOLATER.get_current_branch

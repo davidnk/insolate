@@ -35,17 +35,17 @@ def cli(inso, argv):
         return
     if argv[0] == 'init':
         if len(argv) <= 2:
-            print(inso.start_session(*argv[1:])[1])
+            print(inso.init(*argv[1:])[1])
         else:
             print("Usage: {cmd} init [remote_changes]".format(cmd=Insolater._CMD))
     elif argv[0] == 'pull':
         if len(argv) == 2:
-            print(inso.pull_remote(argv[1]))
+            print(inso.pull(argv[1]))
         else:
             print("Usage: {cmd} pull <remote_changes>".format(cmd=Insolater._CMD))
     elif argv[0] == 'push':
         if len(argv) == 2:
-            print(inso.push_remote(argv[1])[1])
+            print(inso.push(argv[1])[1])
         else:
             print("Usage: {cmd} push <remote_changes>".format(cmd=Insolater._CMD))
     elif argv[0] == 'pwd':
@@ -61,7 +61,7 @@ def cli(inso, argv):
             print(inso.change_branch(argv[1])[1])
     elif argv[0] == 'exit':
         if len(argv) <= 2:
-            print(inso.exit_session(*argv[1:])[1])
+            print(inso.exit(*argv[1:])[1])
         else:
             print("Usage: {cmd} exit [<remote_changes>]".format(cmd=Insolater._CMD))
     else:
