@@ -74,7 +74,7 @@ def main():
                         help="set timeout for file transfers")
     parser.add_argument("-r", "--repo", type=str, default='.insolater_repo',
                         help="set repository to store CHANGES and ORIG")
-    parser.add_argument("-p", "--filepattern", type=str, default='*.py *.txt *.xml',
+    parser.add_argument("-p", "--filepattern", type=str, default='. *.py *.txt *.xml',
                         help="set repository to store CHANGES and ORIG")
     parser.add_argument('cmd', nargs='+', help='command')
     args = parser.parse_args()

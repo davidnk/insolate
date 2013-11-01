@@ -30,22 +30,21 @@ import pexpect
 class Insolater(object):
     _CMD = __file__.split('/')[-1]
     _NOT_INIT_MESSAGE = "No session found. See '{cmd} init <remote changes>'".format(cmd=_CMD)
-    _ALREADY_INIT_MESSAGE = "Already initialized. To end session use: mulit exit [<remote backup>]"
+    _ALREADY_INIT_MESSAGE = (
+        "Already initialized. To end session use: {cmd} exit [<remote backup>]".format(cmd=_CMD))
 
     def __init__(self, repo=".insolater_repo", timeout=5, filepattern="."):
         self.repo = repo
         self.timeout = timeout
-        self.add_str = 'add ' + filepattern
+        self.filepattern = filepattern.split()
 
     def start_session(self, remote_changes=None):
         """Create repo and branches, add current files, optionally add remote changes."""
         if self._repo_exists():
             return False, Insolater._ALREADY_INIT_MESSAGE
-        self._run("echo '{repo}' >> .gitignore")
-        self._run("echo '{fname}*' >> .gitignore".format(fname=__file__.split('/')[-1]))
-        self._run("echo '.gitignore' >> .gitignore")
         self._run_git("--work-tree=. init")
-        self._run_git(self.add_str)
+        self._run("echo '{repo}' >> {repo}/info/exclude")
+        self._run_git_add()
         self._run_git("commit -am 'Original files'")
         self._run_git("tag -a ORIG -m 'original files'")
         self._run_git("branch CHANGES")
@@ -60,7 +59,7 @@ class Insolater(object):
         """Save changes, switch to the supplied branch, restore branch to saved condition."""
         if not self._repo_exists():
             return False, Insolater._NOT_INIT_MESSAGE
-        self._run_git(self.add_str)
+        self._run_git_add()
         self._run_git("commit -am 'update'")
         self._run_git("checkout " + branch)
         self._run_git("reset --hard")
@@ -73,7 +72,7 @@ class Insolater(object):
         if not r[0]:
             return r
         retv = self._run("rsync -Pravdtze ssh {0} .".format(remote_changes))[0]
-        self._run_git(self.add_str)
+        self._run_git_add()
         self._run_git("commit -am 'Pulled changes'")
         self.change_branch(head)
         if (retv != 0):
@@ -92,7 +91,7 @@ class Insolater(object):
         transfer_str = ""
         all_sync = True
         for f in changes:
-            rsync = "rsync -Pravdtze ssh %s %s" % (f, remote_location + f)
+            rsync = "rsync -R -Pravdtze ssh " + f + " " + remote_location
             exitstatus = 0
             try:
                 exitstatus = self._run_with_password(rsync, pswd, self.timeout)[0]
@@ -106,20 +105,22 @@ class Insolater(object):
         self.change_branch(head)
         return all_sync, transfer_str
 
-    def exit_session(self, remote_changes=None):
+    def exit_session(self, remote_location=None, discard_changes=None):
         """Restore original files, and delete changes (delete repo).
         Optionally send changed files to a remote location."""
         r = self._save_cur()
         if not r[0]:
             return r
         transfers = ""
-        if remote_changes:
-            all_sync, transfers = self.push_remote(remote_changes)
+        if remote_location:
+            all_sync, transfers = self.push_remote(remote_location)
             if not all_sync:
                 return all_sync, (transfers + "Aborted (File transfer failed).")
         elif self._run_git("diff --name-only ORIG CHANGES")[1].strip() != '':
-            discard = raw_input("Do you want to discard changes (y/[n]): ")
-            if discard.lower() != 'y':
+            if discard_changes is None:
+                discard = raw_input("Do you want to discard changes (y/[n]): ")
+                discard_changes = discard.lower() == 'y'
+            if not discard_changes:
                 return False, "Aborted to avoid discarding changes."
         self.change_branch("ORIG")
         self._run("rm -rf {repo}")
@@ -154,6 +155,13 @@ class Insolater(object):
     def _run_git(self, command):
         """Runs git --git-dir={repo} command."""
         return self._run("git --git-dir={repo} " + command)
+
+    def _run_git_add(self):
+        """Runs git --git-dir={repo} add -A for each filepattern."""
+        sh = ""
+        for fp in self.filepattern:
+            sh += "git --git-dir={repo} add -A " + fp + ";".format(fp)
+        return self._run(sh)
 
     def _run_with_password(self, command, pswd, timeout=5):
         """Replace instances of {repo} with self.repo and run the command using the password."""
