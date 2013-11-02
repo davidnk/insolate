@@ -40,8 +40,7 @@ class Insolater(object):
 
     def init(self, remote_changes=None):
         """Create repo and branches, add current files, optionally add remote changes."""
-        if self._repo_exists():
-            return False, Insolater._ALREADY_INIT_MESSAGE
+        self._verify_repo_exists(False)
         self._run_git("--work-tree=. init")
         self._run("echo '{repo}' >> {repo}/info/exclude")
         self._run_git_add()
@@ -50,94 +49,85 @@ class Insolater(object):
         self._run_git("branch CHANGES")
         self._run_git("checkout CHANGES")
         if remote_changes:
-            r = self.pull(remote_changes)
-            if not r[0]:
-                return r
-        return True, "Initialized versions ORIG, CHANGES"
+            self.pull(remote_changes)
+        return "Initialized versions ORIG, CHANGES"
 
     def change_branch(self, branch):
         """Save changes, switch to the supplied branch, restore branch to saved condition."""
-        if not self._repo_exists():
-            return False, Insolater._NOT_INIT_MESSAGE
+        self._verify_repo_exists(True)
         self._run_git_add()
         self._run_git("commit -am 'update'")
         self._run_git("checkout " + branch)
         self._run_git("reset --hard")
-        return True, "Switched to %s" % branch
+        return "Switched to %s" % branch
 
     def pull(self, remote_changes):
         """Pull remote changes into local CHANGES branch."""
-        head = self.get_current_branch()[1]
-        r = self.change_branch('CHANGES')
-        if not r[0]:
-            return r
+        head = self.get_current_branch()
+        self.change_branch('CHANGES')
         retv = self._run("rsync -Pravdtze ssh {0} .".format(remote_changes))[0]
         self._run_git_add()
         self._run_git("commit -am 'Pulled changes'")
         self.change_branch(head)
         if (retv != 0):
-            return False, "Failed to sync changes"
-        return True, "Pulled updates"
+            raise Exception("Failed to sync changes")
+        return "Pulled updates"
 
     def push(self, remote_location):
         """Push changes to remote location."""
-        head = self.get_current_branch()[1]
-        r = self.change_branch("CHANGES")
-        if not r[0]:
-            return r
+        head = self.get_current_branch()
+        self.change_branch("CHANGES")
         changes = self._run_git("diff --name-only ORIG CHANGES")[1]
         changes = changes.strip().split('\n')
         pswd = getpass.getpass(remote_location.split(':')[0] + "'s password:")
         transfer_str = ""
-        all_sync = True
         for f in changes:
             rsync = "rsync -R -Pravdtze ssh " + f + " " + remote_location
             exitstatus = 0
             try:
                 exitstatus = self._run_with_password(rsync, pswd, self.timeout)[0]
             except pexpect.TIMEOUT:
-                return False, "Timeout\n"
+                raise Exception("Aborted (File transfer timeouted out)")
             if exitstatus != 0:
                 transfer_str += f + " \t\tFailed to transfer\n"
-                all_sync = False
-            else:
-                transfer_str += f + " \t\ttransfered\n"
+                raise Exception(transfer_str + "Aborted (File transfer failed).")
+            transfer_str += f + " \t\ttransfered\n"
         self.change_branch(head)
-        return all_sync, transfer_str
+        return transfer_str
 
     def exit(self, remote_location=None, discard_changes=None):
         """Restore original files, and delete changes (delete repo).
         Optionally send changed files to a remote location."""
-        r = self._save_cur()
-        if not r[0]:
-            return r
+        self._save_cur()
         transfers = ""
         if remote_location:
-            all_sync, transfers = self.push(remote_location)
-            if not all_sync:
-                return all_sync, (transfers + "Aborted (File transfer failed).")
+            transfers = self.push(remote_location)
         elif self._run_git("diff --name-only ORIG CHANGES")[1].strip() != '':
             if discard_changes is None:
                 discard = raw_input("Do you want to discard changes (y/[n]): ")
                 discard_changes = discard.lower() == 'y'
             if not discard_changes:
-                return False, "Aborted to avoid discarding changes."
+                return "Aborted to avoid discarding changes."
         self.change_branch("ORIG")
         self._run("rm -rf {repo}")
-        return True, (transfers + "Session Ended")
+        return (transfers + "Session Ended")
 
     def get_current_branch(self):
         """Returns the current branch.  This may be a hash value."""
-        if not self._repo_exists():
-            return False, Insolater._NOT_INIT_MESSAGE
+        self._verify_repo_exists(True)
         cur = self._run("cat {repo}/HEAD")[1]
         if 'ref: refs/heads/' in cur:
             cur = cur.strip('ref: refs/heads/').strip()
-        return True, cur
+        return cur
 
-    def _repo_exists(self):
-        """Return whether or not the repo exists."""
-        return os.path.exists(self.repo)
+    def _verify_repo_exists(self, exists):
+        """raise and exception if the repo does not have the specfied state of being."""
+        if exists:
+            if not os.path.exists(self.repo):
+                raise Exception(Insolater._NOT_INIT_MESSAGE)
+        else:
+            if os.path.exists(self.repo):
+                raise Exception(Insolater._ALREADY_INIT_MESSAGE)
 
     def _save_cur(self):
         """Save progress of current branch"""

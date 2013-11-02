@@ -33,39 +33,42 @@ def cli(inso, argv):
     if len(argv) == 0 or argv[0] == '-h' or argv[0] == '--help':
         print(help_str)
         return
-    if argv[0] == 'init':
-        if len(argv) <= 2:
-            print(inso.init(*argv[1:])[1])
-        else:
-            print("Usage: {cmd} init [remote_changes]".format(cmd=Insolater._CMD))
-    elif argv[0] == 'pull':
-        if len(argv) == 2:
-            print(inso.pull(argv[1]))
-        else:
-            print("Usage: {cmd} pull <remote_changes>".format(cmd=Insolater._CMD))
-    elif argv[0] == 'push':
-        if len(argv) == 2:
-            print(inso.push(argv[1])[1])
-        else:
-            print("Usage: {cmd} push <remote_changes>".format(cmd=Insolater._CMD))
-    elif argv[0] == 'pwd':
-            head = inso.get_current_branch()[1]
-            if head == 'CHANGES':
-                print("Currently in CHANGES version.")
+    try:
+        if argv[0] == 'init':
+            if len(argv) <= 2:
+                print(inso.init(*argv[1:]))
             else:
-                print('Currently in ORIG version.')
-    elif argv[0] == 'cd':
-        if len(argv) < 2:
-            print("Usage: {cmd} cd <ORIG or CHANGES>".format(cmd=Insolater._CMD))
+                print("Usage: {cmd} init [remote_changes]".format(cmd=Insolater._CMD))
+        elif argv[0] == 'pull':
+            if len(argv) == 2:
+                print(inso.pull(argv[1]))
+            else:
+                print("Usage: {cmd} pull <remote_changes>".format(cmd=Insolater._CMD))
+        elif argv[0] == 'push':
+            if len(argv) == 2:
+                print(inso.push(argv[1]))
+            else:
+                print("Usage: {cmd} push <remote_changes>".format(cmd=Insolater._CMD))
+        elif argv[0] == 'pwd':
+                head = inso.get_current_branch()
+                if head == 'CHANGES':
+                    print("Currently in CHANGES version.")
+                else:
+                    print('Currently in ORIG version.')
+        elif argv[0] == 'cd':
+            if len(argv) < 2:
+                print("Usage: {cmd} cd <ORIG or CHANGES>".format(cmd=Insolater._CMD))
+            else:
+                print(inso.change_branch(argv[1]))
+        elif argv[0] == 'exit':
+            if len(argv) <= 2:
+                print(inso.exit(*argv[1:]))
+            else:
+                print("Usage: {cmd} exit [<remote_changes>]".format(cmd=Insolater._CMD))
         else:
-            print(inso.change_branch(argv[1])[1])
-    elif argv[0] == 'exit':
-        if len(argv) <= 2:
-            print(inso.exit(*argv[1:])[1])
-        else:
-            print("Usage: {cmd} exit [<remote_changes>]".format(cmd=Insolater._CMD))
-    else:
-        print("Not a {cmd} command. See '{cmd} --help'.".format(cmd=Insolater._CMD))
+            print("Not a {cmd} command. See '{cmd} --help'.".format(cmd=Insolater._CMD))
+    except Exception as error_msg:
+        print error_msg.message
 
 
 def main():
