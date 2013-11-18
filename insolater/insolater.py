@@ -37,6 +37,13 @@ class Insolater(object):
         self.repo = repo
         self.timeout = timeout
         self.filepattern = filepattern.split()
+        #TODO: _get_repo_path()
+        #: make an .inso_include file
+        #:: inso pattern [--add|set|clear|all]      none
+        #: keep track of current version
+        #:: don't allow edits to ORIG
+        #::: either Update ORIG, Discard, Move to CHANGES, or Send to remote
+        #TODO: apply (merge changes into ORIG)
 
     def init(self, remote_changes=None):
         """Create repo and branches, add current files, optionally add remote changes."""
