@@ -25,6 +25,7 @@ import os
 import subprocess
 import getpass
 import pexpect
+import version_tools as vt
 
 
 class Insolater(object):
@@ -37,17 +38,18 @@ class Insolater(object):
         self.repo = repo
         self.timeout = timeout
         self.filepattern = filepattern.split()
+        #TODO: _get_repo_path()
+        #: make an .inso_include file
+        #:: inso pattern [--add|set|clear|all]      none
+        #: keep track of current version
+        #:: don't allow edits to ORIG
+        #::: either Update ORIG, Discard, Move to CHANGES, or Send to remote
+        #TODO: apply (merge changes into ORIG)
 
     def init(self, remote_changes=None):
         """Create repo and branches, add current files, optionally add remote changes."""
         self._verify_repo_exists(False)
-        self._run_git("--work-tree=. init")
-        self._run("echo '{repo}' >> {repo}/info/exclude")
-        self._run_git_add()
-        self._run_git("commit -am 'Original files'")
-        self._run_git("tag -a ORIG -m 'original files'")
-        self._run_git("branch CHANGES")
-        self._run_git("checkout CHANGES")
+        vt.init(self.repo)
         if remote_changes:
             self.pull(remote_changes)
         return "Initialized versions ORIG, CHANGES"
@@ -55,10 +57,9 @@ class Insolater(object):
     def change_branch(self, branch):
         """Save changes, switch to the supplied branch, restore branch to saved condition."""
         self._verify_repo_exists(True)
-        self._run_git_add()
-        self._run_git("commit -am 'update'")
-        self._run_git("checkout " + branch)
-        self._run_git("reset --hard")
+        if vt.current_version(self.repo) != 'original':
+            vt.save_version(self.repo, vt.current_version(self.repo))
+        vt.open_version(self.repo, branch)
         return "Switched to %s" % branch
 
     def pull(self, remote_changes):
@@ -98,7 +99,7 @@ class Insolater(object):
     def exit(self, remote_location=None, discard_changes=None):
         """Restore original files, and delete changes (delete repo).
         Optionally send changed files to a remote location."""
-        self._save_cur()
+        vt.save_version(self.repo)
         transfers = ""
         if remote_location:
             transfers = self.push(remote_location)
@@ -115,10 +116,7 @@ class Insolater(object):
     def get_current_branch(self):
         """Returns the current branch.  This may be a hash value."""
         self._verify_repo_exists(True)
-        cur = self._run("cat {repo}/HEAD")[1]
-        if 'ref: refs/heads/' in cur:
-            cur = cur.strip('ref: refs/heads/').strip()
-        return cur
+        return vt.current_version(self.repo)
 
     def _verify_repo_exists(self, exists):
         """raise and exception if the repo does not have the specfied state of being."""
@@ -128,10 +126,6 @@ class Insolater(object):
         else:
             if os.path.exists(self.repo):
                 raise Exception(Insolater._ALREADY_INIT_MESSAGE)
-
-    def _save_cur(self):
-        """Save progress of current branch"""
-        return self.change_branch("HEAD")
 
     def _run(self, command):
         """Replace instances of {repo} with self.repo and run the command."""

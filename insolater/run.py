@@ -51,10 +51,7 @@ def cli(inso, argv):
                 print("Usage: {cmd} push <remote_changes>".format(cmd=Insolater._CMD))
         elif argv[0] == 'pwd':
                 head = inso.get_current_branch()
-                if head == 'CHANGES':
-                    print("Currently in CHANGES version.")
-                else:
-                    print('Currently in ORIG version.')
+                print("Currently in version: {0}.".format(head))
         elif argv[0] == 'cd':
             if len(argv) < 2:
                 print("Usage: {cmd} cd <ORIG or CHANGES>".format(cmd=Insolater._CMD))
