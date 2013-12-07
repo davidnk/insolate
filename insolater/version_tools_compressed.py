@@ -24,8 +24,24 @@ from __future__ import print_function
 import os
 import shutil
 import cPickle
-from versioncmp import VersionDiff
-from version_tools import init, current_version
+from insolater.versioncmp import VersionDiff
+
+
+def init(repo):
+    if not os.path.isdir(repo):
+        os.mkdir(repo)
+        os.mkdir(repo+'/removed')
+        os.mkdir(repo+'/versions')
+        with open(repo+'/current_version', 'w') as f:
+            f.write('original')
+        shutil.copytree('.', repo + '/versions/original', ignore=shutil.ignore_patterns(repo))
+        with open(repo+'/removed/original', 'w') as f:
+            cPickle.dump([], f)
+
+
+def current_version(repo):
+    with open(repo+'/current_version', 'r') as f:
+        return f.readline().strip()
 
 
 def save_version(repo, version=''):
@@ -34,39 +50,47 @@ def save_version(repo, version=''):
     version_path = repo + '/versions/' + version
     if os.path.isdir(version_path):
         #TODO: merging changes
-        os.rmdir(version_path)
+        shutil.rmtree(version_path)
     os.mkdir(version_path)
     vd = VersionDiff(repo)
     for fp in vd.changed+vd.added_files_recursive():
+        fp = './' + fp
         p, f = fp.rsplit('/', 1)
-        p = version_path + '/' + p
+        p = version_path + '/' + p + '/'
         if not os.path.isdir(p):
             os.makedirs(p)
         shutil.copy2(fp, p+f)
-    cPickle.dump(vd.removed_files_recursive(), repo+'/removed/'+version)
+    with open(repo+'/removed/'+version, 'w') as f:
+        cPickle.dump(vd.removed_files_recursive(), f)
 
 
 def open_version(repo, version):
     cv = current_version(repo)
+    vp = repo + '/versions/' + version + '/'
     if cv == 'original':
         #TODO: overwrite?
-        save_version(repo, 'head')
+        save_version(repo, 'current_version')
     else:
         save_version(repo, cv)
+    if not os.path.isdir(vp):
+        save_version(repo, version)
     vd = VersionDiff(repo)
-    for fp in vd.changed:
+    for fp in vd.changed+vd.removed_files_recursive():
         shutil.copy2(repo+'/versions/original/'+fp, fp)
     for fp in vd.added_files_recursive():
         os.remove(fp)
     vd = VersionDiff(repo, version)
     for fp in vd.changed:
-        shutil.copy2(repo+'/versions/'+version+'/'+fp, fp)
+        shutil.copy2(vp+fp, fp)
     for fp in vd.added_files_recursive():
+        fp = './' + fp
         p, f = fp.rsplit('/', 1)
+        p += '/'
         if not os.path.isdir(p):
             os.makedirs(p)
-        shutil.copy2(repo+'/versions/'+version+'/'+fp, fp)
-    removed = cPickle.load(repo+'/removed/'+version)
+        shutil.copy2(vp+fp, fp)
+    with open(repo+'/removed/'+version, 'r') as f:
+        removed = cPickle.load(f)
     for fp in removed:
         os.remove(fp)
     with open(repo+'/current_version', 'w') as f:

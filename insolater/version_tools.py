@@ -32,7 +32,7 @@ def init(repo):
         os.mkdir(repo+'/versions')
         with open(repo+'/current_version', 'w') as f:
             f.write('original')
-        shutil.copytree('.', repo + '/original', ignore=shutil.ignore_patterns(repo))
+        shutil.copytree('.', repo + '/versions/original', ignore=shutil.ignore_patterns(repo))
 
 
 def current_version(repo):
@@ -46,7 +46,7 @@ def save_version(repo, version=''):
     version_path = repo + '/versions/' + version
     if os.path.isdir(version_path):
         #TODO: merging changes
-        os.rmdir(version_path)
+        shutil.rmtree(version_path)
     shutil.copytree('.', version_path, ignore=shutil.ignore_patterns(repo))
     with open(repo+'/current_version', 'w') as f:
         f.write(version)
@@ -54,19 +54,21 @@ def save_version(repo, version=''):
 
 def open_version(repo, version):
     cv = current_version(repo)
+    vp = repo + '/versions/' + version + '/'
     if cv == 'original':
         #TODO: overwrite?
-        save_version(repo, 'head')
+        save_version(repo, 'current_version')
     else:
         save_version(repo, cv)
+    if not os.path.isdir(vp):
+        save_version(repo, version)
     for f in os.listdir('.'):
         if f == repo:
             continue
         if os.path.isdir(f):
-            os.rmdir(f)
+            shutil.rmtree(f)
         else:
             os.remove(f)
-    vp = repo + '/versions/' + version + '/'
     for f in os.listdir(vp):
         if os.path.isdir(vp+f):
             shutil.copytree(vp+f, f)

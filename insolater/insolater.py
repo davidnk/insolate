@@ -25,7 +25,7 @@ import os
 import subprocess
 import getpass
 import pexpect
-import version_tools as vt
+from insolater import version_tools_git as vt
 
 
 class Insolater(object):
@@ -109,7 +109,7 @@ class Insolater(object):
                 discard_changes = discard.lower() == 'y'
             if not discard_changes:
                 return "Aborted to avoid discarding changes."
-        self.change_branch("ORIG")
+        self.change_branch("original")
         self._run("rm -rf {repo}")
         return (transfers + "Session Ended")
 

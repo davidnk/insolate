@@ -22,7 +22,6 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import subprocess
-from version_tools import current_version
 
 
 def init(repo):
@@ -35,6 +34,11 @@ def init(repo):
     _run_git(repo, "checkout -b current_version")
     with open(repo+'/current_version', 'w') as f:
         f.write('original')
+
+
+def current_version(repo):
+    with open(repo+'/current_version', 'r') as f:
+        return f.readline().strip()
 
 
 def save_version(repo, version=''):
@@ -72,7 +76,7 @@ def _run(command):
 
 def _run_git(repo, command):
     """Runs git --git-dir={repo} command."""
-    return _run(repo, "git --git-dir=" + repo + " " + command)
+    return _run("git --git-dir=" + repo + " " + command)
 
 
 def _run_git_add(repo, filepatterns=[]):
@@ -80,4 +84,4 @@ def _run_git_add(repo, filepatterns=[]):
     sh = ""
     for fp in filepatterns:
         sh += "git --git-dir={repo} add -A " + fp + ";".format(fp)
-    return _run(repo, sh)
+    return _run(sh)

@@ -26,7 +26,12 @@ __all__ = [
     'pull',
     'exit',
     'cd',
-    'pwd']
+    'pwd',
+    'version_tools',
+    'version_tools_git',
+    'version_tools_compressed',
+    'versioncmp',
+    ]
 
 # Export the global Insolater object methods.
 from insolater import Insolater
