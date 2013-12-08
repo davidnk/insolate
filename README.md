@@ -5,11 +5,6 @@ A simple version control system for small personal projects.
 insolater has an easy to use interface to save, open, and transfer versions
 of your work.
 
-TODO
---------
-  - Allow updates to the original version
-  - Merging
-
 Examples
 -------
 In a python script:
@@ -34,97 +29,105 @@ In a python script:
 
 Running from command line:
 ```
-~/test $ ls *
-fa  fb
+  ~/test $ ls *
+  fa  fb  test_scipt.sh
 
-d:
-fa  fc
-~/test $ inso init
-Initialized repository with versions: original
-~/test $ inso list
-* original
-~/test $ echo data > f
-~/test $ rm fb
-~/test $ echo data >> fa
-~/test $ echo data >> d/fa
-~/test $ inso save changes
-is_version() takes exactly 2 arguments (1 given)
-~/test $ ls *
-f  fa
+  d:
+  fa  fc
+  ~/test $ inso init
+  Initialized repository with versions: original
+  ~/test $ inso list
+  * original
+  ~/test $ echo data > f
+  ~/test $ rm fb
+  ~/test $ echo data >> fa
+  ~/test $ echo data >> d/fa
+  ~/test $ inso save changes
+  Version changes created and opened
+  ~/test $ ls *
+  f  fa  test_scipt.sh
 
-d:
-fa  fc
-~/test $ inso open original
-Switched to original
-~/test $ ls *
-fa  fb
+  d:
+  fa  fc
+  ~/test $ inso open original
+  Switched to original
+  ~/test $ ls *
+  fa  fb  test_scipt.sh
 
-d:
-fa  fc
-~/test $ cat fa
-old data a
-~/test $ cat d/fa
-old data da
-~/test $ inso open changes
-Version not found: changes
-~/test $ ls *
-fa  fb
+  d:
+  fa  fc
+  ~/test $ cat fa
+  old data a
+  ~/test $ cat d/fa
+  old data da
+  ~/test $ inso open changes
+  Switched to changes
+  ~/test $ ls *
+  f  fa  test_scipt.sh
 
-d:
-fa  fc
-~/test $ cat fa
-old data a
-~/test $ cat d/fa
-old data da
-~/test $ cat f
-cat: f: No such file or directory
-~/test $ ls ~/test_changes
-~/test $ inso save changes2
-is_version() takes exactly 2 arguments (1 given)
-~/test $ inso list
-* original
-~/test $ inso open changes
-Version not found: changes
-~/test $ inso rm changes2
-Version not found: changes2
-~/test $ inso list
-* original
-~/test $ inso push $USER@localhost:~/test_changes/
-user@localhost's password:
-fa    transfered
-d     transfered
-fb    transfered
+  d:
+  fa  fc
+  ~/test $ cat fa
+  old data a
+  data
+  ~/test $ cat d/fa
+  old data da
+  data
+  ~/test $ cat f
+  data
+  ~/test $ ls ~/test_changes
+  ~/test $ inso save changes2
+  Version changes2 created and opened
+  ~/test $ inso list
+    original
+  * changes2
+    changes
+  ~/test $ inso open changes
+  Switched to changes
+  ~/test $ inso rm changes2
+  Version changes2 deleted
+  ~/test $ inso list
+    original
+  * changes
+  ~/test $ inso push $USER@localhost:~/test_changes/
+  user@localhost's password:
+  f     transfered
+  fa    transfered
+  d     transfered
+  test_scipt.sh     transfered
+  .test_output.swp    transfered
 
-~/test $ inso exit
-Do you want to discard all changes (y/[n]): y
-Session Ended
-~/test $ ls ../test_changes/ ../test_changes/d
-../test_changes/:
-d  fa  fb
+  ~/test $ inso exit
+  Do you want to discard all changes (y/[n]): y
+  Session Ended
+  ~/test $ ls ../test_changes/ ../test_changes/d
+  ../test_changes/:
+  d  f  fa  test_scipt.sh
 
-../test_changes/d:
-fa  fc
-~/test $ ls *
-fa  fb
+  ../test_changes/d:
+  fa  fc
+  ~/test $ ls *
+  fa  fb  test_scipt.sh
 
-d:
-fa  fc
-~/test $ cat d/fa
-old data da
-~/test $ inso init $USER@localhost:~/test_changes/
-user@localhost's password: 
-Initialized repository with versions: original
-~/test $ ls *
-fa  fb
+  d:
+  fa  fc
+  ~/test $ cat d/fa
+  old data da
+  ~/test $ inso init $USER@localhost:~/test_changes/
+  user@localhost's password: 
+  Initialized repository with versions: original
+  ~/test $ inso list
+  * original
+  ~/test $ ls *
+  f  fa  test_scipt.sh
 
-d:
-fa  fc
-~/test $ cat d/fa
-old data da
-~/test $ inso exit
-Do you want to discard all changes (y/[n]): y
-Session Ended
-~/test $ cat d/fa
-old data da
-
+  d:
+  fa  fc
+  ~/test $ cat d/fa
+  old data da
+  data
+  ~/test $ inso -f exit
+  Session Ended
+  ~/test $ cat d/fa
+  old data da
 ````

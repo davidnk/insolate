@@ -22,7 +22,7 @@ from distutils.core import setup
 
 setup(
     name='insolater',
-    version='1.0.0',
+    version='0.0.1',
     packages=['insolater'],
     author='David Karesh',
     author_email='davidnk@gmail.com',
