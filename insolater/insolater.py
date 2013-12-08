@@ -78,19 +78,28 @@ class Insolater(object):
         else:
             return "Version not found: %s" % version
 
-    def save_version(self, version):
+    def save_version(self, version='', overwrite=None):
         """Save/create and open a version with the specified name.
-        Fails if specified version already exists.
-        Fails if version name starts with '_'."""
+        Fails if version name starts with '_'.
+        Prompts if version already exists unless overwrite is set."""
         self._verify_repo_exists(True)
         #TODO: better version name checking
-        if version == '' or version[0] == '_':
+        cv = vt.current_version(self.repo)
+        version = version or cv
+        if version[0] == '_':
             return "Invalid version name: %s" % version
-        if vt.is_version(self.repo, version):
-            return "Version %s already exists" % version
-        vt.save_version(self.repo, version)
-        vt.open_version(self.repo, version)
-        return "Version %s created and opened" % version
+        if not vt.is_version(version):
+            vt.save_version(self.repo, version)
+            vt.open_version(self.repo, version)
+            return "Version %s created and opened" % version
+        if overwrite is None:
+            discard = raw_input("Do you want to overwrite changes (y/[n]): ")
+            overwrite = discard.lower() != 'y'
+        if overwrite:
+            vt.save_version(self.repo, version)
+            vt.open_version(self.repo, version)
+            return "Version %s saved and opened" % version
+        return "Aborted to avoid overwriting."
 
     def delete_version(self, version):
         """Delete the specified version.
