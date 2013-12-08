@@ -52,7 +52,7 @@ class Insolater(object):
         self._verify_repo_exists(False)
         vt.init(self.repo)
         if remote_changes:
-            self.pull(remote_changes)
+            self.pull_version(remote_changes)
         return "Initialized repository with versions: original"
 
     def current_version(self):
