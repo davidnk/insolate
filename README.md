@@ -16,7 +16,7 @@ In a python script:
 ```python
   import insolater
   insolater.init()
-  insolater.new_version('v1')
+  insolater.save_version('v1')
   insolater.change_version('v1')
   # Modify some files
   insolater.push_version('user@host:path_to_dir_for_version')
@@ -48,7 +48,7 @@ Running from command line:
   rm: cannot remove ‘b’: No such file or directory
   ~/test $ echo data >> fa
   ~/test $ echo data >> d/fa
-  ~/test $ inso new changes
+  ~/test $ inso save changes
   Version changes created and opened
   ~/test $ ls *
   f  fa  fb
@@ -82,7 +82,7 @@ Running from command line:
   ~/test $ cat f
   data
   ~/test $ ls ~/test_changes
-  ~/test $ inso new changes2
+  ~/test $ inso save changes2
   Version changes2 created and opened
   ~/test $ inso list
     original

@@ -25,8 +25,8 @@ from insolater import Insolater
 
 help_str = ("{cmd} init [<remote_changes>]              Starts a new session.\n" +
             "{cmd} list                                 Displays versions.\n" +
-            "{cmd} new  <version>                       Displays versions.\n" +
-            "{cmd} rm   <version>                       Displays versions.\n" +
+            "{cmd} save  <version>                      Save to version.\n" +
+            "{cmd} rm   <version>                       Remove version.\n" +
             "{cmd} open <version>                       Switches to the requested version\n" +
             "{cmd} pull <remote_location> [<version>]   Pull remote version [to version]\n" +
             "{cmd} push <remote_location> [<version>]   Push [version] to remote location\n" +
@@ -51,11 +51,11 @@ def cli(inso, argv):
                         print('* ' + v)
                     else:
                         print('  ' + v)
-        elif argv[0] == 'new':
+        elif argv[0] == 'save':
             if len(argv) < 2:
-                print("Usage: {cmd} new <version>".format(cmd=Insolater._CMD))
+                print("Usage: {cmd} save <version>".format(cmd=Insolater._CMD))
             else:
-                print(inso.new_version(argv[1]))
+                print(inso.save_version(argv[1]))
         elif argv[0] == 'rm':
             if len(argv) < 2:
                 print("Usage: {cmd} rm <version>".format(cmd=Insolater._CMD))

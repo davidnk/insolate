@@ -78,8 +78,8 @@ class Insolater(object):
         else:
             return "Version not found: %s" % version
 
-    def new_version(self, version):
-        """Create and open a new version with the specified name.
+    def save_version(self, version):
+        """Save/create and open a version with the specified name.
         Fails if specified version already exists.
         Fails if version name starts with '_'."""
         self._verify_repo_exists(True)
@@ -111,7 +111,7 @@ class Insolater(object):
         self._verify_repo_exists(True)
         cv = vt.current_version(self.repo)
         if version:
-            self.new_version(version)
+            self.save_version(version)
             self.change_version(version)
         for f in os.listdir('.'):
             if f != self.repo:

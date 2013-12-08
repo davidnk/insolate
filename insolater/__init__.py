@@ -24,7 +24,7 @@ __all__ = [
     'init',
     'current_version',
     'all_versions',
-    'new_version',
+    'save_version',
     'delete_version',
     'change_version',
     'pull_version',
@@ -45,7 +45,7 @@ _INSOLATER = Insolater()
 init = _INSOLATER.init
 current_version = _INSOLATER.current_version
 all_versions = _INSOLATER.all_versions
-new_version = _INSOLATER.new_version
+save_version = _INSOLATER.save_version
 delete_version = _INSOLATER.delete_version
 change_version = _INSOLATER.change_version
 pull_version = _INSOLATER.pull_version
