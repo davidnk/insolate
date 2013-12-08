@@ -22,11 +22,14 @@ __all__ = [
     'Insolater',
     'cli',
     'init',
-    'push',
-    'pull',
+    'current_version',
+    'all_versions',
+    'new_version',
+    'delete_version',
+    'change_version',
+    'pull_version',
+    'push_version',
     'exit',
-    'cd',
-    'pwd',
     'version_tools',
     'version_tools_git',
     'version_tools_compressed',
@@ -40,8 +43,11 @@ from run import cli
 _INSOLATER = Insolater()
 
 init = _INSOLATER.init
-push = _INSOLATER.push
-pull = _INSOLATER.pull
+current_version = _INSOLATER.current_version
+all_versions = _INSOLATER.all_versions
+new_version = _INSOLATER.new_version
+delete_version = _INSOLATER.delete_version
+change_version = _INSOLATER.change_version
+pull_version = _INSOLATER.pull_version
+push_version = _INSOLATER.push_version
 exit = _INSOLATER.exit
-cd = _INSOLATER.change_branch
-pwd = _INSOLATER.get_current_branch

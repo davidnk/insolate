@@ -22,20 +22,21 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import os
+import shutil
 import subprocess
 import getpass
 import pexpect
-from insolater import version_tools_git as vt
+from insolater import version_tools as vt
 
 
 class Insolater(object):
-    _CMD = __file__.split('/')[-1]
+    _CMD = "inso"
     _NOT_INIT_MESSAGE = "No session found. See '{cmd} init <remote changes>'".format(cmd=_CMD)
     _ALREADY_INIT_MESSAGE = (
         "Already initialized. To end session use: {cmd} exit [<remote backup>]".format(cmd=_CMD))
 
     def __init__(self, repo=".insolater_repo", timeout=5, filepattern="."):
-        self.repo = repo
+        self.repo = os.path.normpath(repo)
         self.timeout = timeout
         self.filepattern = filepattern.split()
         #TODO: _get_repo_path()
@@ -47,82 +48,131 @@ class Insolater(object):
         #TODO: apply (merge changes into ORIG)
 
     def init(self, remote_changes=None):
-        """Create repo and branches, add current files, optionally add remote changes."""
+        """Create repo and store original files.  Optionally retrieve version remotely."""
         self._verify_repo_exists(False)
         vt.init(self.repo)
         if remote_changes:
             self.pull(remote_changes)
-        return "Initialized versions ORIG, CHANGES"
+        return "Initialized repository with versions: original"
 
-    def change_branch(self, branch):
-        """Save changes, switch to the supplied branch, restore branch to saved condition."""
+    def current_version(self):
+        """Returns the current version."""
         self._verify_repo_exists(True)
-        if vt.current_version(self.repo) != 'original':
-            vt.save_version(self.repo, vt.current_version(self.repo))
-        vt.open_version(self.repo, branch)
-        return "Switched to %s" % branch
+        return vt.current_version(self.repo)
 
-    def pull(self, remote_changes):
-        """Pull remote changes into local CHANGES branch."""
-        head = self.get_current_branch()
-        self.change_branch('CHANGES')
-        retv = self._run("rsync -Pravdtze ssh {0} .".format(remote_changes))[0]
-        self._run_git_add()
-        self._run_git("commit -am 'Pulled changes'")
-        self.change_branch(head)
+    def all_versions(self):
+        self._verify_repo_exists(True)
+        return vt.all_versions(self.repo)
+
+    def change_version(self, version):
+        """Save changes and switch to the specified version."""
+        self._verify_repo_exists(True)
+        #TODO: save changes? when in original
+        vt.save_version(self.repo)
+        vt.open_version(self.repo, version)
+        if vt.current_version(self.repo) == version:
+            return "Switched to %s" % version
+        else:
+            return "Version not found: %s" % version
+
+    def new_version(self, version):
+        """Create and open a new version with the specified name.
+        Fails if specified version already exists.
+        Fails if version name starts with '_'."""
+        self._verify_repo_exists(True)
+        #TODO: better version name checking
+        if version == '' or version[0] == '_':
+            return "Invalid version name: %s" % version
+        if vt.is_version(self.repo, version):
+            return "Version %s already exists" % version
+        vt.save_version(self.repo, version)
+        vt.open_version(self.repo, version)
+        return "Version %s created and opened" % version
+
+    def delete_version(self, version):
+        """Delete the specified version.
+        Fail if the version does not exists, version is 'original' or it is the current version."""
+        self._verify_repo_exists(True)
+        if not vt.is_version(self.repo, version):
+            return "Version not found: %s" % version
+        if vt.current_version(self.repo) == version:
+            return "Cannot delete current version: %s" % version
+        if version == 'original':
+            return "Cannot delete original version"
+        vt.delete_version(self.repo, version)
+        return "Version %s deleted" % version
+
+    def pull_version(self, remote_changes, version=''):
+        """Pull remote changes into specified version.
+        If no version is specified pull into current version."""
+        self._verify_repo_exists(True)
+        cv = vt.current_version(self.repo)
+        if version:
+            self.new_version(version)
+            self.change_version(version)
+        for f in os.listdir('.'):
+            if f != self.repo:
+                if os.path.isdir(f):
+                    shutil.rmtree(f)
+                else:
+                    os.remove(f)
+        retv = self._run("rsync -Pravdtze ssh {0}/* .".format(os.path.normpath(remote_changes)))[0]
+        if version != '' and version != cv:
+            self.change_version(cv)
         if (retv != 0):
             raise Exception("Failed to sync changes")
         return "Pulled updates"
 
-    def push(self, remote_location):
-        """Push changes to remote location."""
-        head = self.get_current_branch()
-        self.change_branch("CHANGES")
-        changes = self._run_git("diff --name-only ORIG CHANGES")[1]
-        changes = changes.strip().split('\n')
+    def push_version(self, remote_location, version=''):
+        """Push specified version to remote location.
+        If no version is specified push the current version."""
+        self._verify_repo_exists(True)
+        cv = vt.current_version(self.repo)
+        if version and version != cv:
+            if not vt.is_version(self.repo, version):
+                return "Version not found: %s" % version
+            self.change_version(version)
         pswd = getpass.getpass(remote_location.split(':')[0] + "'s password:")
         transfer_str = ""
-        for f in changes:
+        for f in os.listdir('.'):
+            if f == self.repo:
+                continue
             rsync = "rsync -R -Pravdtze ssh " + f + " " + remote_location
             exitstatus = 0
             try:
                 exitstatus = self._run_with_password(rsync, pswd, self.timeout)[0]
             except pexpect.TIMEOUT:
                 raise Exception("Aborted (File transfer timeouted out)")
+            finally:
+                self.change_version(cv)
             if exitstatus != 0:
                 transfer_str += f + " \t\tFailed to transfer\n"
                 raise Exception(transfer_str + "Aborted (File transfer failed).")
             transfer_str += f + " \t\ttransfered\n"
-        self.change_branch(head)
         return transfer_str
 
-    def exit(self, remote_location=None, discard_changes=None):
-        """Restore original files, and delete changes (delete repo).
-        Optionally send changed files to a remote location."""
-        vt.save_version(self.repo)
-        transfers = ""
-        if remote_location:
-            transfers = self.push(remote_location)
-        elif self._run_git("diff --name-only ORIG CHANGES")[1].strip() != '':
-            if discard_changes is None:
-                discard = raw_input("Do you want to discard changes (y/[n]): ")
-                discard_changes = discard.lower() == 'y'
-            if not discard_changes:
-                return "Aborted to avoid discarding changes."
-        self.change_branch("original")
-        self._run("rm -rf {repo}")
-        return (transfers + "Session Ended")
-
-    def get_current_branch(self):
-        """Returns the current branch.  This may be a hash value."""
+    def exit(self, discard_changes=None):
+        """Restore original files, and delete all changes (delete repo)."""
         self._verify_repo_exists(True)
-        return vt.current_version(self.repo)
+        if discard_changes is None:
+            discard = raw_input("Do you want to discard all changes (y/[n]): ")
+            discard_changes = discard.lower() == 'y'
+        if not discard_changes:
+            return "Aborted to avoid discarding changes."
+        vt.open_version(self.repo, 'original')
+        shutil.rmtree(self.repo)
+        return "Session Ended"
 
     def _verify_repo_exists(self, exists):
-        """raise and exception if the repo does not have the specfied state of being."""
+        """(may change pythons current directory).
+        raise an exception if the repo does not have the specfied state of being."""
         if exists:
             if not os.path.exists(self.repo):
-                raise Exception(Insolater._NOT_INIT_MESSAGE)
+                if os.getcwd() == '/':
+                    raise Exception(Insolater._NOT_INIT_MESSAGE)
+                else:
+                    os.chdir('..')
+                    self._verify_repo_exists(exists)
         else:
             if os.path.exists(self.repo):
                 raise Exception(Insolater._ALREADY_INIT_MESSAGE)

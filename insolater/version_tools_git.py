@@ -21,6 +21,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+import os
 import subprocess
 
 
@@ -31,9 +32,18 @@ def init(repo):
     _run_git(repo, "add -A .")
     _run_git(repo, "commit -am 'Original files'")
     _run_git(repo, "branch original")
-    _run_git(repo, "checkout -b current_version")
+    _run_git(repo, "checkout -b _current_version")
+    _run_git(repo, "branch -D master")
     with open(repo+'/current_version', 'w') as f:
         f.write('original')
+
+
+def is_version(repo, version):
+    return os.path.isfile(repo+'/refs/heads/'+version)
+
+
+def all_versions(repo):
+    return filter(lambda x: x[0] != '_', os.listdir(repo+'/refs/heads/'))
 
 
 def current_version(repo):
@@ -41,28 +51,44 @@ def current_version(repo):
         return f.readline().strip()
 
 
-def save_version(repo, version=''):
-    if version == '':
-        version = current_version(repo)
-    _run_git(repo, "add -A .")
-    _run_git(repo, "commit -am 'update'")
-    _run_git(repo, "branch -D "+version)
-    _run_git(repo, "branch -m current_version "+version)
-    _run_git(repo, "checkout -b current_version")
-    with open(repo+'/current_version', 'w') as f:
-        f.write(version)
-
-
 def open_version(repo, version):
+    if not is_version(repo, version):
+        return
     _run_git(repo, "add -A .")
     _run_git(repo, "commit -am 'clear staging'")
     _run_git(repo, "branch "+version)
     _run_git(repo, "checkout "+version)
     _run_git(repo, "reset --hard")
-    _run_git(repo, "branch -D current_version")
-    _run_git(repo, "checkout -b current_version")
+    _run_git(repo, "branch -D _current_version")
+    _run_git(repo, "checkout -b _current_version")
     with open(repo+'/current_version', 'w') as f:
         f.write(version)
+
+
+def save_version(repo, version=''):
+    if version == '':
+        version = current_version(repo)
+    if version == 'original':
+        return
+    _run_git(repo, "add -A .")
+    _run_git(repo, "commit -am 'update'")
+    _run_git(repo, "branch -D "+version)
+    _run_git(repo, "branch -m _current_version "+version)
+    _run_git(repo, "checkout -b _current_version")
+
+
+def delete_version(repo, version):
+    if ((not is_version(repo, version)) or
+            version == 'original' or
+            current_version(repo) == version):
+        return
+    _run_git(repo, "branch -D "+version)
+
+
+def diff_version(repo, v1, v2):
+    changes = _run_git(repo, "diff --name-only {0} {1}".format(v1, v2))[1]
+    changes = changes.strip().split('\n')
+    return changes
 
 
 def _run(command):
