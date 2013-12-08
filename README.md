@@ -1,148 +1,136 @@
 insolater
 =========
 
-Easily switch between original and modified versions of a directory.
+A simple version control system.
 
 
-Warnings
+TODO
 --------
-This project is still in its early stages and some features are not ideal.
-General rule: If something goes wrong DO NOT run 'insolate.exit()' or 'inso exit'
-
-Problems you may encounter include:
-  - Changes made in ORIG version are discarded when changing versions.
-    - If this happens and you lose important changes DO NOT run 'insolate.exit()'
-      or 'inso exit'.  The changes are not perminantly lost until you do.
-    - To recover the changes run 'insolater.cd("master")' or 'inso cd master', then save
-      the changes to a location outside of the directory before using the exit command.
-  - Changes cannot be merged into the original version yet, so if you don't have a remote
-    host to store them on, you'll need to either: move them outside of the directory by hand
-    OR run 'inso push $USER@localhost:~/path_from_home_dir_to_backup_location'
-    - make sure not to backup changes into the insolated directory or they will be removed
-      on exit.
-  - Deleting a file, sending changes elsewhere, then restoring changes will not re-delete
-    the file.
+  - Allow updates to the original version
+  - Merging
 
 Examples
 -------
 In a python script:
 ```python
-  import insolate
-  
+  import insolater
   insolater.init()
-  #returns (True, 'Initialized versions ORIG, CHANGES')
-  
-  insolater.cd('CHANGES')
-  #returns (True, 'Switched to CHANGES')
-
-  ... changes to files ...
-
-  insolater.cd('ORIG')
-  #returns (True, 'Switched to ORIG')
-  #directory now has its original state except for the .insolater_repo
-
-  insolater.cd('CHANGES')
-  #returns (True, 'Switched to CHANGES')
-  #back to the modified copy
-
-  insolater.push('user@host:path_to_dir_for_changes')
-  #returns (True, '<transfered files>')
-
-  insolater.exit(discard_changes=True)
-  #returns (True, 'Session Ended')
-
-  insolater.init('user@host:path_to_dir_for_changes')
-  #returns (True, 'Initialized versions ORIG, CHANGES')
-  #directory is in modified state
-
-  insolater.cd('ORIG')
-  #returns (True, 'Switched to ORIG')
-  #directory now has its original state except for the .insolater_repo
-
-  insolater.exit('user@host:path_to_dir_for_changes')
-  #returns (True, '<transfered files>\nSession Ended')
+  insolater.new_version('v1')
+  insolater.change_version('v1')
+  # Modify some files
+  insolater.push_version('user@host:path_to_dir_for_version')
+  insolater.pull_version('user@host:path_to_dir_for_version', 'pulled_ver')
+  insolater.current_version()
+  insolater.change_version('original')
+  # Changes are not present.
+  insolater.change_version('pulled_ver')
+  # Changes are back.
+  insolater.delete_version('v1')
+  insolater.all_versions()
+  insolater.exit(True)
+  # .insolater_repo is deleted and files are in their original condition.
 ````
 
 Running from command line:
 ```
   ~/test $ ls *
-  a  b
+  fa  fb
 
   d:
-  a  c
+  fa  fc
   ~/test $ inso init
-  Initialized versions ORIG, CHANGES
-  ~/test $ inso pwd
-  Currently in CHANGES version.
-  ~/test $ echo 'data' >> f
+  Initialized repository with versions: original
+  ~/test $ inso list
+  * original
+  ~/test $ echo data > f
   ~/test $ rm b
-  ~/test $ echo 'data' >> a
-  ~/test $ echo 'other' >> d/a
+  rm: cannot remove ‘b’: No such file or directory
+  ~/test $ echo data >> fa
+  ~/test $ echo data >> d/fa
+  ~/test $ inso new changes
+  Version changes created and opened
   ~/test $ ls *
-  a  f
+  f  fa  fb
 
   d:
-  a  c
-  ~/test $ inso cd ORIG
-  Switched to ORIG
+  fa  fc
+  ~/test $ inso open original
+  Switched to original
   ~/test $ ls *
-  a  b
+  fa  fb
 
   d:
-  a  c
-  ~/test $ cat a
+  fa  fc
+  ~/test $ cat fa
   old data a
-  ~/test $ cat d/a
-  old data d/a
-  ~/test $ inso cd CHANGES
-  Switched to CHANGES
+  ~/test $ cat d/fa
+  old data da
+  ~/test $ inso open changes
+  Switched to changes
   ~/test $ ls *
-  a  f
+  f  fa  fb
 
   d:
-  a  c
-  ~/test $ cat a
+  fa  fc
+  ~/test $ cat fa
   old data a
   data
-  ~/test $ cat d/a
-  old data d/a
-  other
+  ~/test $ cat d/fa
+  old data da
+  data
   ~/test $ cat f
   data
-  ~/test $ ls ../test_changes/
-  ~/test $ inso exit $USER@localhost:~/test_changes/
-  name@localhost's password:
-  a               transfered
-  b               transfered
-  d/a             transfered
-  f               transfered
+  ~/test $ ls ~/test_changes
+  ~/test $ inso new changes2
+  Version changes2 created and opened
+  ~/test $ inso list
+    original
+  * changes2
+    changes
+  ~/test $ inso open changes
+  Switched to changes
+  ~/test $ inso rm changes2
+  Version changes2 deleted
+  ~/test $ inso list
+    original
+  * changes
+  ~/test $ inso push $USER@localhost:~/test_changes/
+  user@localhost's password:
+  f     transfered
+  fa    transfered
+  d     transfered
+  fb    transfered
+
+  ~/test $ inso exit
+  Do you want to discard all changes (y/[n]): y
   Session Ended
-  ~/test $ ls ../test_changes/*
-  ../test_changes/a  ../test_changes/f
+  ~/test $ ls ../test_changes/ ../test_changes/d
+  ../test_changes/:
+  d  f  fa  fb
 
   ../test_changes/d:
-  a
+  fa  fc
   ~/test $ ls *
-  a  b
+  fa  fb
 
   d:
-  a  c
-  ~/test $ cat d/a
-  old data d/a
+  fa  fc
+  ~/test $ cat d/fa
+  old data da
   ~/test $ inso init $USER@localhost:~/test_changes/
-  name@localhost's password:
-  Initialized versions ORIG, CHANGES
+  user@localhost's password: 
+  Initialized repository with versions: original
   ~/test $ ls *
-  a  b  f
+  f  fa  fb
 
   d:
-  a  c
-  ~/test $ cat d/a
-  old data d/a
-  other
+  fa  fc
+  ~/test $ cat d/fa
+  old data da
+  data
   ~/test $ inso exit
-  Do you want to discard changes (y/[n]): y
+  Do you want to discard all changes (y/[n]): y
   Session Ended
-  ~/test $ cat d/a
-  old data d/a
+  ~/test $ cat d/fa
+  old data da
 ````
