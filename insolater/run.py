@@ -30,13 +30,13 @@ help_str = ("{cmd} init [<remote_changes>]              Starts a new session.\n"
             "{cmd} open <version>                       Switches to the requested version\n" +
             "{cmd} pull <remote_location> [<version>]   Pull remote version [to version]\n" +
             "{cmd} push <remote_location> [<version>]   Push [version] to remote location\n" +
-            "{cmd} exit                                 Permanently delete all versions\n" +
+            "{cmd} exit [<version>]                     Permanently delete all versions\n" +
             (' ' * len(Insolater._CMD)) +
-            "                                               and restore original."
+            "                                           and restore original or specified version."
             ).format(cmd=Insolater._CMD)
 
 
-def cli(inso, argv):
+def cli(inso, argv, force):
     try:
         if argv[0] == 'init':
             if len(argv) <= 2:
@@ -55,7 +55,7 @@ def cli(inso, argv):
             if len(argv) < 2:
                 print("Usage: {cmd} save <version>".format(cmd=Insolater._CMD))
             else:
-                print(inso.save_version(argv[1]))
+                print(inso.save_version(argv[1], force or None))
         elif argv[0] == 'rm':
             if len(argv) < 2:
                 print("Usage: {cmd} rm <version>".format(cmd=Insolater._CMD))
@@ -77,7 +77,10 @@ def cli(inso, argv):
             else:
                 print(inso.push_version(*argv[1:]))
         elif argv[0] == 'exit':
-            print(inso.exit())
+            if len(argv) >= 2:
+                print(inso.exit(argv[1], force or None))
+            else:
+                print(inso.exit(discard_changes=force or None))
         else:
             print("Not a {cmd} command.".format(cmd=Insolater._CMD))
             print(help_str)
@@ -91,6 +94,8 @@ def main():
         print(help_str)
         return
     parser = argparse.ArgumentParser()
+    parser.add_argument("-f", "--force", action='store_true',
+                        help="Send 'y' to all prompts.")
     parser.add_argument("-t", "--timeout", type=int, default=5,
                         help="set timeout for file transfers")
     parser.add_argument("-r", "--repo", type=str, default='.insolater_repo',
@@ -100,7 +105,7 @@ def main():
     parser.add_argument('cmd', nargs='+', help='command')
     args = parser.parse_args()
     i = Insolater(repo=args.repo, timeout=args.timeout, filepattern=args.filepattern)
-    cli(i, args.cmd)
+    cli(i, args.cmd, args.force)
 
 
 if __name__ == '__main__':

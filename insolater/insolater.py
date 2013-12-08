@@ -88,7 +88,7 @@ class Insolater(object):
         version = version or cv
         if version[0] == '_':
             return "Invalid version name: %s" % version
-        if not vt.is_version(version):
+        if not vt.is_version(self.repo, version):
             vt.save_version(self.repo, version)
             vt.open_version(self.repo, version)
             return "Version %s created and opened" % version
@@ -163,15 +163,18 @@ class Insolater(object):
             transfer_str += f + " \t\ttransfered\n"
         return transfer_str
 
-    def exit(self, discard_changes=None):
-        """Restore original files, and delete all changes (delete repo)."""
+    def exit(self, version='original', discard_changes=None):
+        """Open original or specified version files, and delete all other versions
+        (delete repo)."""
         self._verify_repo_exists(True)
+        if not vt.is_version(self.repo, version):
+            return "Version not found: %s" % version
         if discard_changes is None:
             discard = raw_input("Do you want to discard all changes (y/[n]): ")
             discard_changes = discard.lower() == 'y'
         if not discard_changes:
             return "Aborted to avoid discarding changes."
-        vt.open_version(self.repo, 'original')
+        vt.open_version(self.repo, version)
         shutil.rmtree(self.repo)
         return "Session Ended"
 
