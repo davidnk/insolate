@@ -68,7 +68,10 @@ class Insolater(object):
         """Save changes and switch to the specified version."""
         self._verify_repo_exists(True)
         #TODO: save changes? when in original
-        vt.save_version(self.repo)
+        if vt.current_version(self.repo) == 'original':
+            vt.save_version(self.repo, '_original_edit')
+        else:
+            vt.save_version(self.repo)
         vt.open_version(self.repo, version)
         if vt.current_version(self.repo) == version:
             return "Switched to %s" % version
