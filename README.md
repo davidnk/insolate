@@ -1,8 +1,9 @@
 insolater
 =========
 
-A simple version control system.
-
+A simple version control system for small personal projects.
+insolater has an easy to use interface to save, open, and transfer versions
+of your work.
 
 TODO
 --------
