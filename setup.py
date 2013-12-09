@@ -19,6 +19,7 @@ setup(
     author='David Karesh',
     author_email='davidnk@gmail.com',
     url='github.com/davidnk/insolater',
+    download_url="https://github.com/davidnk/insolater/tarball/v0.0.1",
     packages=['insolater'],
     include_package_data=True,
     install_requires=[],
