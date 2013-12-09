@@ -22,7 +22,7 @@ setup(
     download_url="https://github.com/davidnk/insolater/tarball/v0.0.1",
     packages=['insolater'],
     include_package_data=True,
-    install_requires=[],
+    install_requires=['argparse', 'pexpect'],
     license=license,
     entry_points={'console_scripts': ['inso = insolater.run:main']},
     classifiers=(
