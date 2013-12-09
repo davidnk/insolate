@@ -65,7 +65,7 @@ def cli(inso, argv, force):
             print("Not a {cmd} command.".format(cmd=Insolater._CMD))
             print(help_str)
     except Exception as error_msg:
-        print error_msg.message
+        print(error_msg.message)
 
 
 def main():
