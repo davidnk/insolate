@@ -20,6 +20,7 @@ setup(
     author_email='davidnk@gmail.com',
     url='github.com/davidnk/insolater',
     packages=['insolater'],
+    include_package_data=True,
     install_requires=[],
     license=license,
     entry_points={'console_scripts': ['inso = insolater.run:main']},
