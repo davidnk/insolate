@@ -6,9 +6,11 @@ insolater has an easy to use interface to save, open, and transfer versions
 of your work.
 
 Examples
--------
+--------
 In a python script:
-.. code-block:: pycon
+
+.. code-block:: python
+
   import insolater
   insolater.init()
   insolater.save_version('v1')
@@ -26,8 +28,8 @@ In a python script:
   insolater.exit(True)
   # .insolater_repo is deleted and files are in their original condition.
 
-Running from command line:
-.. code-block:: bash
+Running from command line::
+
   $ ls *
   fa  fb  test_scipt.sh
 
@@ -128,3 +130,4 @@ Running from command line:
   Session Ended
   $ cat d/fa
   old data da
+
