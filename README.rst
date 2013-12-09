@@ -8,7 +8,7 @@ of your work.
 Examples
 -------
 In a python script:
-```python
+.. code-block:: pycon
   import insolater
   insolater.init()
   insolater.save_version('v1')
@@ -25,109 +25,106 @@ In a python script:
   insolater.all_versions()
   insolater.exit(True)
   # .insolater_repo is deleted and files are in their original condition.
-````
 
 Running from command line:
-```
-  ~/test $ ls *
+.. code-block:: bash
+  $ ls *
   fa  fb  test_scipt.sh
 
   d:
   fa  fc
-  ~/test $ inso init
+  $ inso init
   Initialized repository with versions: original
-  ~/test $ inso list
+  $ inso list
   * original
-  ~/test $ echo data > f
-  ~/test $ rm fb
-  ~/test $ echo data >> fa
-  ~/test $ echo data >> d/fa
-  ~/test $ inso save changes
+  $ echo data > f
+  $ rm fb
+  $ echo data >> fa
+  $ echo data >> d/fa
+  $ inso save changes
   Version changes created and opened
-  ~/test $ ls *
+  $ ls *
   f  fa  test_scipt.sh
 
   d:
   fa  fc
-  ~/test $ inso open original
+  $ inso open original
   Switched to original
-  ~/test $ ls *
+  $ ls *
   fa  fb  test_scipt.sh
 
   d:
   fa  fc
-  ~/test $ cat fa
+  $ cat fa
   old data a
-  ~/test $ cat d/fa
+  $ cat d/fa
   old data da
-  ~/test $ inso open changes
+  $ inso open changes
   Switched to changes
-  ~/test $ ls *
+  $ ls *
   f  fa  test_scipt.sh
 
   d:
   fa  fc
-  ~/test $ cat fa
+  $ cat fa
   old data a
   data
-  ~/test $ cat d/fa
+  $ cat d/fa
   old data da
   data
-  ~/test $ cat f
+  $ cat f
   data
-  ~/test $ ls ~/test_changes
-  ~/test $ inso save changes2
+  $ ls ~/test_changes
+  $ inso save changes2
   Version changes2 created and opened
-  ~/test $ inso list
+  $ inso list
     original
   * changes2
     changes
-  ~/test $ inso open changes
+  $ inso open changes
   Switched to changes
-  ~/test $ inso rm changes2
+  $ inso rm changes2
   Version changes2 deleted
-  ~/test $ inso list
+  $ inso list
     original
   * changes
-  ~/test $ inso push $USER@localhost:~/test_changes/
+  $ inso push $USER@localhost:~/test_changes/
   user@localhost's password:
   f     transfered
   fa    transfered
   d     transfered
   test_scipt.sh     transfered
-  .test_output.swp    transfered
 
-  ~/test $ inso exit
+  $ inso exit
   Do you want to discard all changes (y/[n]): y
   Session Ended
-  ~/test $ ls ../test_changes/ ../test_changes/d
+  $ ls ../test_changes/ ../test_changes/d
   ../test_changes/:
   d  f  fa  test_scipt.sh
 
   ../test_changes/d:
   fa  fc
-  ~/test $ ls *
+  $ ls *
   fa  fb  test_scipt.sh
 
   d:
   fa  fc
-  ~/test $ cat d/fa
+  $ cat d/fa
   old data da
-  ~/test $ inso init $USER@localhost:~/test_changes/
+  $ inso init $USER@localhost:~/test_changes/
   user@localhost's password: 
   Initialized repository with versions: original
-  ~/test $ inso list
+  $ inso list
   * original
-  ~/test $ ls *
+  $ ls *
   f  fa  test_scipt.sh
 
   d:
   fa  fc
-  ~/test $ cat d/fa
+  $ cat d/fa
   old data da
   data
-  ~/test $ inso -f exit
+  $ inso -f exit
   Session Ended
-  ~/test $ cat d/fa
+  $ cat d/fa
   old data da
-````
