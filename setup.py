@@ -6,7 +6,7 @@ except ImportError:
 packages = ['insolater'],
 requires = []
 
-with open('README.md') as f:
+with open('README.rst') as f:
     readme = f.read()
 with open('LICENSE.txt') as f:
     license = f.read()
